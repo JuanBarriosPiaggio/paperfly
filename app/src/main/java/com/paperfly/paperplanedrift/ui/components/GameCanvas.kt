@@ -432,6 +432,23 @@ private fun DrawScope.drawDartFamily(halfW: Float, halfH: Float, skin: PlaneSkin
                     )
                 }
             }
+            SkinStyle.LEAF -> {
+                val vein = PaperWhite.copy(alpha = 0.9f)
+                val thin = Stroke(width = halfH * 0.09f, cap = StrokeCap.Round)
+                // Midrib running from the tail to the nose tip.
+                val midrib = Path().apply {
+                    moveTo(-halfW * 0.95f, -halfH * 0.42f)
+                    quadraticBezierTo(-halfW * 0.1f, -halfH * 0.30f, halfW * 0.95f, -halfH * 0.02f)
+                }
+                drawPath(midrib, vein, style = Stroke(width = halfH * 0.13f, cap = StrokeCap.Round))
+                // Side veins branching off the midrib toward the wing edges.
+                for ((k, fx) in listOf(-0.72f, -0.42f, -0.12f, 0.22f).withIndex()) {
+                    val bx = halfW * fx
+                    val by = -halfH * (0.40f - 0.10f * k)
+                    drawLine(vein, Offset(bx, by), Offset(bx - halfW * 0.16f, by - halfH * 0.42f), strokeWidth = thin.width, cap = StrokeCap.Round)
+                    drawLine(vein, Offset(bx, by), Offset(bx - halfW * 0.10f, by + halfH * 0.48f), strokeWidth = thin.width, cap = StrokeCap.Round)
+                }
+            }
             SkinStyle.COMET -> {
                 val star = PaperWhite.copy(alpha = 0.92f)
                 for ((sx, sy) in listOf(

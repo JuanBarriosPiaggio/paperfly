@@ -17,6 +17,8 @@ enum class SkinStyle {
     STRIPES,
     /** Curved wind-wave decals on the wing. */
     WAVES,
+    /** Leaf midrib and side veins across the wing. */
+    LEAF,
     /** Night body with star specks and a warm comet glow trailing behind. */
     COMET,
     /** Full origami crane silhouette with raised wing and folded neck. */
@@ -51,7 +53,7 @@ object SkinRepository {
     val skins: List<PlaneSkin> = listOf(
         PlaneSkin("dart", "Terracotta Dart", 0xFFE2703A, 0xFFC95F2E, 0xFF3A322A, UnlockMethod.Free, SkinStyle.DART),
         PlaneSkin("sunset", "Sunline Racer", 0xFFFFFDF4, 0xFFD8CDBA, 0xFF3A322A, UnlockMethod.Milestone(100), SkinStyle.STRIPES),
-        PlaneSkin("mint", "Sage Current", 0xFF7E9A5B, 0xFF5F7A42, 0xFF3A322A, UnlockMethod.Milestone(250), SkinStyle.WAVES),
+        PlaneSkin("mint", "Sage Leaf", 0xFF7E9A5B, 0xFF5F7A42, 0xFF3A322A, UnlockMethod.Milestone(250), SkinStyle.LEAF),
         PlaneSkin("sky", "Teal Breeze", 0xFF4F8C93, 0xFF3D6F75, 0xFF3A322A, UnlockMethod.AdWatch, SkinStyle.WAVES),
         PlaneSkin("midnight", "Midnight Comet", 0xFF3F4756, 0xFF2C3542, 0xFF3A322A, UnlockMethod.Milestone(500), SkinStyle.COMET),
         PlaneSkin("crane", "Origami Crane", 0xFFF8BBD0, 0xFFEC7FA6, 0xFF3A322A, UnlockMethod.Iap(PRODUCT_ORIGAMI), SkinStyle.CRANE),
