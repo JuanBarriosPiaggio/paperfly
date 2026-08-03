@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.safeDrawingPadding
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Switch
 import androidx.compose.material3.SwitchDefaults
@@ -40,6 +41,7 @@ fun SettingsScreen(
         modifier = Modifier
             .fillMaxSize()
             .background(PaperColors.Cream)
+            .safeDrawingPadding()
             .padding(20.dp),
     ) {
         Row(verticalAlignment = Alignment.CenterVertically) {

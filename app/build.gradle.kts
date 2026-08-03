@@ -6,12 +6,14 @@ plugins {
 
 android {
     namespace = "com.paperfly.paperplanedrift"
-    compileSdk = 34
+    // Play requires app updates to target an API level within one year of the
+    // latest Android release (API 36 required from Aug 31, 2026).
+    compileSdk = 36
 
     defaultConfig {
         applicationId = "com.paperfly.paperplanedrift"
         minSdk = 26
-        targetSdk = 34
+        targetSdk = 36
         versionCode = 1
         versionName = "1.0"
     }
@@ -51,8 +53,8 @@ dependencies {
     implementation("androidx.datastore:datastore-preferences:1.1.1")
     // AdMob (test ad unit IDs are used in code; swap for real IDs before release)
     implementation("com.google.android.gms:play-services-ads:23.2.0")
-    // Google Play Billing v6+ for Remove Ads and cosmetic IAPs
-    implementation("com.android.billingclient:billing-ktx:6.2.1")
+    // Google Play Billing v8 (required for Play updates after Aug 31, 2026)
+    implementation("com.android.billingclient:billing-ktx:8.0.0")
 
     testImplementation("junit:junit:4.13.2")
 }

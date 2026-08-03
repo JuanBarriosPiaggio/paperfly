@@ -8,6 +8,7 @@ import com.android.billingclient.api.BillingClient
 import com.android.billingclient.api.BillingClientStateListener
 import com.android.billingclient.api.BillingFlowParams
 import com.android.billingclient.api.BillingResult
+import com.android.billingclient.api.PendingPurchasesParams
 import com.android.billingclient.api.ProductDetails
 import com.android.billingclient.api.Purchase
 import com.android.billingclient.api.PurchasesUpdatedListener
@@ -16,7 +17,7 @@ import com.android.billingclient.api.QueryPurchasesParams
 import com.paperfly.paperplanedrift.data.SkinRepository
 
 /**
- * Google Play Billing (v6) wrapper for the "Remove Ads" non-consumable
+ * Google Play Billing (v8) wrapper for the "Remove Ads" non-consumable
  * and cosmetic skin purchases. Entitlements are reported through
  * [onEntitlement] with the product ID.
  *
@@ -29,7 +30,10 @@ class BillingManager(
 
     private val client: BillingClient = BillingClient.newBuilder(context)
         .setListener(this)
-        .enablePendingPurchases()
+        .enablePendingPurchases(
+            PendingPurchasesParams.newBuilder().enableOneTimeProducts().build()
+        )
+        .enableAutoServiceReconnection()
         .build()
 
     private var productDetails: Map<String, ProductDetails> = emptyMap()
@@ -64,9 +68,10 @@ class BillingManager(
                 .build()
         }
         val params = QueryProductDetailsParams.newBuilder().setProductList(products).build()
-        client.queryProductDetailsAsync(params) { result, detailsList ->
+        // PBL 8: the callback delivers a QueryProductDetailsResult instead of a plain list.
+        client.queryProductDetailsAsync(params) { result, detailsResult ->
             if (result.responseCode == BillingClient.BillingResponseCode.OK) {
-                productDetails = detailsList.associateBy { it.productId }
+                productDetails = detailsResult.productDetailsList.associateBy { it.productId }
             }
         }
     }
