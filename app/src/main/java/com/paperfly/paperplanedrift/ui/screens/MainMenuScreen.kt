@@ -10,20 +10,20 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import com.paperfly.paperplanedrift.data.Progress
 import com.paperfly.paperplanedrift.data.SkinRepository
+import com.paperfly.paperplanedrift.ui.components.PaperButton
 import com.paperfly.paperplanedrift.ui.components.PlanePreview
+import com.paperfly.paperplanedrift.ui.theme.PaperColors
 
 @Composable
 fun MainMenuScreen(
@@ -37,22 +37,24 @@ fun MainMenuScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(MaterialTheme.colorScheme.background)
+            .background(PaperColors.Cream)
             .padding(24.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center,
     ) {
+        // Hand-drawn wordmark: Baloo 2 Bold with a slight fold tilt.
         Text(
             text = "Paper Plane Drift",
             style = MaterialTheme.typography.headlineLarge,
-            fontWeight = FontWeight.Bold,
-            color = MaterialTheme.colorScheme.onBackground,
+            color = PaperColors.Ink,
+            modifier = Modifier.graphicsLayer { rotationZ = -1.5f },
         )
         Spacer(Modifier.height(8.dp))
         Text(
             text = "Hold to climb, release to dive.\nRead the wind before it reads you.",
             style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            textAlign = TextAlign.Center,
+            color = PaperColors.Tan,
         )
         Spacer(Modifier.height(24.dp))
 
@@ -64,41 +66,37 @@ fun MainMenuScreen(
         Text(
             text = "Best: ${progress.highScore}",
             style = MaterialTheme.typography.titleLarge,
-            fontWeight = FontWeight.SemiBold,
+            color = PaperColors.Ink,
         )
         if (progress.bestCleanStreak > 0) {
             Text(
                 text = "Best clean-glide streak: ${progress.bestCleanStreak}",
                 style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                color = PaperColors.Tan,
             )
         }
         Spacer(Modifier.height(28.dp))
 
-        Button(
+        PaperButton(
+            text = "Fly",
             onClick = onFly,
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(64.dp),
-        ) {
-            Text("Fly", fontSize = 24.sp, fontWeight = FontWeight.Bold)
-        }
-        Spacer(Modifier.height(12.dp))
-        OutlinedButton(
-            onClick = onDaily,
+            big = true,
             modifier = Modifier.fillMaxWidth(),
-        ) {
-            val dailyText = if (progress.dailyBest > 0) "Daily Challenge  (today: ${progress.dailyBest})"
-            else "Daily Challenge"
-            Text(dailyText)
-        }
+        )
+        Spacer(Modifier.height(14.dp))
+        PaperButton(
+            text = if (progress.dailyBest > 0) "Daily Challenge  (today: ${progress.dailyBest})" else "Daily Challenge",
+            onClick = onDaily,
+            primary = false,
+            modifier = Modifier.fillMaxWidth(),
+        )
         Spacer(Modifier.height(20.dp))
 
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            TextButton(onClick = onShop) { Text("Skins") }
-            TextButton(onClick = onSettings) { Text("Settings") }
+            TextButton(onClick = onShop) { Text("Skins", color = PaperColors.Teal) }
+            TextButton(onClick = onSettings) { Text("Settings", color = PaperColors.Teal) }
             TextButton(onClick = onToggleSound) {
-                Text(if (progress.soundEnabled) "Sound: On" else "Sound: Off")
+                Text(if (progress.soundEnabled) "Sound: On" else "Sound: Off", color = PaperColors.Teal)
             }
         }
     }

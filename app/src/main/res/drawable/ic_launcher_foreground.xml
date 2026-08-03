@@ -1,17 +1,21 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- Origami Facets: low-poly folded plane, nose-on, four crease facets in tonal steps.
+     Sized to the ~66dp safe zone of the 108dp adaptive-icon canvas. -->
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
     android:width="108dp"
     android:height="108dp"
     android:viewportWidth="108"
     android:viewportHeight="108">
-    <!-- Paper plane -->
     <path
-        android:fillColor="#FFFFFF"
-        android:pathData="M26,58 L82,34 L58,74 L50,60 Z" />
+        android:fillColor="#E2703A"
+        android:pathData="M54,27.6 L80.4,57.3 L54,50.7 Z" />
     <path
-        android:fillColor="#E8E0D0"
-        android:pathData="M50,60 L82,34 L58,74 Z" />
+        android:fillColor="#C95F2E"
+        android:pathData="M54,27.6 L27.6,57.3 L54,50.7 Z" />
     <path
-        android:fillColor="#D8CDB8"
-        android:pathData="M50,60 L56,72 L58,74 Z" />
+        android:fillColor="#F0946B"
+        android:pathData="M54,50.7 L80.4,57.3 L60.6,80.4 Z" />
+    <path
+        android:fillColor="#A54E26"
+        android:pathData="M54,50.7 L27.6,57.3 L47.4,80.4 Z" />
 </vector>

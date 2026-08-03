@@ -29,13 +29,14 @@ object SkinRepository {
     const val PRODUCT_SKIN_PACK = "skin_pack_all"
     const val PRODUCT_REMOVE_ADS = "remove_ads"
 
+    // Craft Paper palette: terracotta hero plane, ink outlines throughout.
     val skins: List<PlaneSkin> = listOf(
-        PlaneSkin("dart", "Classic Dart", 0xFFFFFFFF, 0xFFE3DCCB, 0xFF8A8171, UnlockMethod.Free),
-        PlaneSkin("sunset", "Sunset Glider", 0xFFFFB74D, 0xFFF57C00, 0xFF8D4A00, UnlockMethod.Milestone(100)),
-        PlaneSkin("mint", "Mint Breeze", 0xFFA5E8C8, 0xFF5DBB8E, 0xFF2E7D5B, UnlockMethod.Milestone(250)),
-        PlaneSkin("midnight", "Midnight Note", 0xFF546E7A, 0xFF37474F, 0xFFB0BEC5, UnlockMethod.Milestone(500)),
-        PlaneSkin("sky", "Sky Ribbon", 0xFF90CAF9, 0xFF42A5F5, 0xFF1565C0, UnlockMethod.AdWatch),
-        PlaneSkin("crane", "Origami Crane", 0xFFF8BBD0, 0xFFEC7FA6, 0xFFAD1457, UnlockMethod.Iap(PRODUCT_ORIGAMI)),
+        PlaneSkin("dart", "Terracotta Dart", 0xFFE2703A, 0xFFC95F2E, 0xFF3A322A, UnlockMethod.Free),
+        PlaneSkin("sunset", "Kraft Classic", 0xFFFFFDF4, 0xFFD8CDBA, 0xFF3A322A, UnlockMethod.Milestone(100)),
+        PlaneSkin("mint", "Sage Glider", 0xFF7E9A5B, 0xFF5F7A42, 0xFF3A322A, UnlockMethod.Milestone(250)),
+        PlaneSkin("midnight", "Midnight Note", 0xFF546E7A, 0xFF37474F, 0xFF3A322A, UnlockMethod.Milestone(500)),
+        PlaneSkin("sky", "Teal Breeze", 0xFF4F8C93, 0xFF3D6F75, 0xFF3A322A, UnlockMethod.AdWatch),
+        PlaneSkin("crane", "Origami Crane", 0xFFF8BBD0, 0xFFEC7FA6, 0xFF3A322A, UnlockMethod.Iap(PRODUCT_ORIGAMI)),
     )
 
     fun byId(id: String): PlaneSkin = skins.firstOrNull { it.id == id } ?: skins.first()

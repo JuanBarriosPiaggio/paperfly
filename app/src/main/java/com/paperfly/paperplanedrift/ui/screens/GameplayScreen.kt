@@ -2,9 +2,10 @@ package com.paperfly.paperplanedrift.ui.screens
 
 import android.app.Activity
 import androidx.activity.compose.BackHandler
+import androidx.compose.animation.animateColorAsState
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.gestures.detectTapGestures
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -13,16 +14,14 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Button
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -32,7 +31,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.onSizeChanged
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -46,6 +44,8 @@ import com.paperfly.paperplanedrift.domain.GamePhase
 import com.paperfly.paperplanedrift.ui.GameViewModel
 import com.paperfly.paperplanedrift.ui.components.AdBanner
 import com.paperfly.paperplanedrift.ui.components.GameCanvas
+import com.paperfly.paperplanedrift.ui.components.PaperButton
+import com.paperfly.paperplanedrift.ui.theme.PaperColors
 
 @Composable
 fun GameplayScreen(
@@ -117,25 +117,39 @@ fun GameplayScreen(
                 },
         )
 
-        // Minimal HUD: just the distance, plus the streak when it's alive.
+        // HUD: ink numerals on a translucent cream pill; milestone crossings flash sage.
         if (state.phase == GamePhase.RUNNING || state.phase == GamePhase.CRASHING) {
+            var flashUntil by remember { mutableFloatStateOf(-1f) }
+            val milestone = state.meters / 100
+            LaunchedEffect(milestone) {
+                if (milestone > 0) flashUntil = state.elapsed + 0.4f
+            }
+            val hudColor by animateColorAsState(
+                if (state.elapsed < flashUntil) PaperColors.Sage else PaperColors.Ink,
+                label = "hudFlash",
+            )
             Column(
                 modifier = Modifier
                     .align(Alignment.TopCenter)
                     .padding(top = 40.dp),
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
-                Text(
-                    text = "${state.meters} m",
-                    fontSize = 34.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = Color(0xFF4A4132).copy(alpha = 0.85f),
-                )
+                Surface(
+                    color = PaperColors.Cream.copy(alpha = 0.85f),
+                    shape = RoundedCornerShape(50),
+                ) {
+                    Text(
+                        text = "${state.meters} m",
+                        style = MaterialTheme.typography.headlineMedium,
+                        color = hudColor,
+                        modifier = Modifier.padding(horizontal = 20.dp, vertical = 2.dp),
+                    )
+                }
                 if (state.cleanGlideStreak > 0) {
                     Text(
                         text = "clean glide x${state.cleanGlideStreak}",
-                        fontSize = 14.sp,
-                        color = Color(0xFF2E7D5B).copy(alpha = 0.8f),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = PaperColors.Sage,
                     )
                 }
             }
@@ -150,15 +164,15 @@ fun GameplayScreen(
             ) {
                 Text(
                     text = if (state.dailyMode) "Daily Challenge" else "Ready?",
-                    fontSize = 26.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = Color(0xFF4A4132),
+                    style = MaterialTheme.typography.headlineSmall,
+                    color = PaperColors.Ink,
                 )
                 Spacer(Modifier.height(8.dp))
                 Text(
                     text = "Hold to climb • Release to dive\nTap and hold to launch",
                     textAlign = TextAlign.Center,
-                    color = Color(0xFF6B6252),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = PaperColors.Tan,
                 )
             }
         }
@@ -198,45 +212,63 @@ private fun GameOverOverlay(
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color(0x66000000)),
+            .background(Color(0x553A322A)),
         contentAlignment = Alignment.Center,
     ) {
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
-            Card(
+            // Cream card, 2dp ink border, 20dp corner radius (per brief).
+            Surface(
+                color = PaperColors.Cream,
                 shape = RoundedCornerShape(20.dp),
-                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                modifier = Modifier.border(2.dp, PaperColors.Ink, RoundedCornerShape(20.dp)),
             ) {
                 Column(
                     modifier = Modifier.padding(28.dp),
                     horizontalAlignment = Alignment.CenterHorizontally,
                 ) {
-                    Text("Crumpled!", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
+                    Text("Crumpled!", style = MaterialTheme.typography.headlineSmall, color = PaperColors.Ink)
                     Spacer(Modifier.height(12.dp))
-                    Text("$score", fontSize = 44.sp, fontWeight = FontWeight.Bold)
+                    Text(
+                        "$score",
+                        style = MaterialTheme.typography.displayLarge,
+                        fontSize = 46.sp,
+                        color = PaperColors.Terracotta,
+                    )
                     Text(
                         "$meters m" + if (bonuses > 0) "  +  $bonuses clean glides" else "",
                         style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        color = PaperColors.Tan,
                     )
                     Spacer(Modifier.height(4.dp))
                     Text(
                         "Best: $bestScore",
                         style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        color = PaperColors.Tan,
                     )
                     Spacer(Modifier.height(20.dp))
 
                     if (canRevive) {
-                        Button(onClick = onRevive, modifier = Modifier.fillMaxWidth()) {
-                            Text("Continue  (watch ad)")
-                        }
-                        Spacer(Modifier.height(8.dp))
-                    }
-                    OutlinedButton(onClick = onRetry, modifier = Modifier.fillMaxWidth()) {
-                        Text("Retry")
+                        PaperButton(
+                            text = "Continue  (watch ad)",
+                            onClick = onRevive,
+                            modifier = Modifier.fillMaxWidth(),
+                        )
+                        Spacer(Modifier.height(10.dp))
+                        PaperButton(
+                            text = "Retry",
+                            onClick = onRetry,
+                            primary = false,
+                            modifier = Modifier.fillMaxWidth(),
+                        )
+                    } else {
+                        PaperButton(
+                            text = "Retry",
+                            onClick = onRetry,
+                            modifier = Modifier.fillMaxWidth(),
+                        )
                     }
                     TextButton(onClick = onMenu, modifier = Modifier.fillMaxWidth()) {
-                        Text("Menu")
+                        Text("Menu", color = PaperColors.Teal)
                     }
                 }
             }

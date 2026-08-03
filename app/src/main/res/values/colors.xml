@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="paper_bg">#FDF6EC</color>
-    <color name="ic_launcher_background">#F7C873</color>
+    <!-- Craft Paper Minimal palette -->
+    <color name="paper_bg">#F6EFE2</color>
+    <color name="ic_launcher_background">#F6EFE2</color>
 </resources>
