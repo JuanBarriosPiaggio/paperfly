@@ -11,6 +11,7 @@ import com.paperfly.paperplanedrift.domain.GameConfig
 import com.paperfly.paperplanedrift.domain.GamePhase
 import com.paperfly.paperplanedrift.domain.Obstacle
 import com.paperfly.paperplanedrift.domain.ObstacleSpawner
+import com.paperfly.paperplanedrift.domain.ObstacleType
 import com.paperfly.paperplanedrift.domain.Particle
 import com.paperfly.paperplanedrift.domain.PhysicsEngine
 import com.paperfly.paperplanedrift.domain.PlaneState
@@ -67,6 +68,10 @@ class GameViewModel(
     private var gustEntryY = 0f
     private var gustMaxDeviation = 0f
 
+    // Tracks whether each animated obstacle (scissors/stapler) is currently
+    // "closed", so we can fire a snip/snap sound exactly on the closing edge.
+    private val obstacleClosedState = HashMap<Int, Boolean>()
+
     init {
         viewModelScope.launch {
             val p = progressRepository.progress.first()
@@ -86,6 +91,8 @@ class GameViewModel(
         spawner = ObstacleSpawner(seed)
         lastFrameNanos = 0L
         activeGust = null
+        obstacleClosedState.clear()
+        soundManager.stopLoops()
         uiState = GameUiState(
             phase = GamePhase.READY,
             worldWidth = uiState.worldWidth,
@@ -99,6 +106,7 @@ class GameViewModel(
         when (s.phase) {
             GamePhase.READY -> if (down) {
                 soundManager.playSwoosh()
+                soundManager.startLoops()
                 uiState = s.copy(phase = GamePhase.RUNNING, holding = true)
             }
             GamePhase.RUNNING -> uiState = s.copy(holding = down)
@@ -114,6 +122,7 @@ class GameViewModel(
         // Clear anything dangerous around and just ahead of the plane.
         val safeObstacles = s.obstacles.filter { it.worldX < planeX - 20f || it.worldX > planeX + 90f }
         soundManager.playSwoosh()
+        soundManager.startLoops()
         uiState = s.copy(
             phase = GamePhase.RUNNING,
             plane = PlaneState(y = GameConfig.WORLD_HEIGHT / 2f, vy = 0f),
@@ -202,6 +211,38 @@ class GameViewModel(
         if (meters / 100 > s.meters / 100) soundManager.playTick()
         val score = ScoreCalculator.totalScore(meters, cleanCount)
 
+        // --- Ambient audio mix ---
+        // Glide gets louder while diving; wind rustles inside a gust;
+        // the fan hum swells as a desk fan approaches.
+        val diveT = (plane.vy / GameConfig.MAX_FALL_SPEED).coerceIn(0f, 1f)
+        val glideLevel = 0.5f + 0.5f * diveT
+        val windLevel = gustNow?.let {
+            0.35f + 0.65f * (abs(it.forceY) / GameConfig.MAX_GUST_STRENGTH).coerceIn(0f, 1f)
+        } ?: 0f
+        var fanLevel = 0f
+        for (o in obstacles) {
+            if (o.type != ObstacleType.FAN) continue
+            val t = 1f - abs(o.worldX - planeWorldX) / (s.worldWidth * 0.9f)
+            if (t > fanLevel) fanLevel = t
+        }
+        soundManager.setLoopLevels(glideLevel, windLevel, fanLevel * fanLevel)
+
+        // --- Closing-animation sounds (scissors snip, stapler snap) ---
+        for (o in obstacles) {
+            val isScissors = o.type == ObstacleType.SCISSORS
+            if (!isScissors && o.type != ObstacleType.STAPLER) continue
+            if (abs(o.worldX - planeWorldX) > s.worldWidth) {
+                obstacleClosedState.remove(o.id)
+                continue
+            }
+            val threshold = if (isScissors) 0.55f else 0.5f
+            val closedNow = o.currentGapHalf(elapsed) < o.gapHalf * threshold
+            if (closedNow && obstacleClosedState[o.id] != true) {
+                if (isScissors) soundManager.playSnip() else soundManager.playSnap()
+            }
+            obstacleClosedState[o.id] = closedNow
+        }
+
         s = s.copy(
             distance = distance,
             elapsed = elapsed,
@@ -220,6 +261,7 @@ class GameViewModel(
             (invulnerable <= 0f && CollisionDetector.collidesAny(planeWorldX, plane.y, obstacles, elapsed))
 
         uiState = if (crashed) {
+            soundManager.stopLoops()
             soundManager.playThud()
             hapticsManager.crash()
             s.copy(
@@ -277,6 +319,11 @@ class GameViewModel(
                 colorIndex = rnd.nextInt(3),
             )
         }
+    }
+
+    override fun onCleared() {
+        soundManager.stopLoops()
+        super.onCleared()
     }
 
     private fun stepParticles(particles: List<Particle>, dt: Float): List<Particle> =

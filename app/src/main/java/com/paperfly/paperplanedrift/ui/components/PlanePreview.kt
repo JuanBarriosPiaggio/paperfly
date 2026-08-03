@@ -36,6 +36,7 @@ fun PlanePreview(skin: PlaneSkin, modifier: Modifier = Modifier, animate: Boolea
             halfH = size.height * 0.20f,
             pitchDeg = bob * 5f,
             skin = skin,
+            time = if (animate) t else 0f,
         )
     }
 }

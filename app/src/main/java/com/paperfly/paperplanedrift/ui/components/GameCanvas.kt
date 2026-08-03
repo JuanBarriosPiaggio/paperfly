@@ -11,8 +11,10 @@ import androidx.compose.ui.graphics.PathEffect
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.graphics.drawscope.clipPath
 import androidx.compose.ui.graphics.drawscope.withTransform
 import com.paperfly.paperplanedrift.data.PlaneSkin
+import com.paperfly.paperplanedrift.data.SkinStyle
 import com.paperfly.paperplanedrift.domain.GameConfig
 import com.paperfly.paperplanedrift.domain.GamePhase
 import com.paperfly.paperplanedrift.domain.Obstacle
@@ -339,6 +341,7 @@ private fun DrawScope.drawGust(gust: WindGust, state: GameUiState, unit: Float) 
 /**
  * Shared paper-plane renderer, also used by menu/shop previews.
  * [halfW]/[halfH] are in pixels; the plane is drawn centered on [center].
+ * [time] drives skin animations (engine flames, comet shimmer).
  */
 fun DrawScope.drawPaperPlane(
     center: Offset,
@@ -347,39 +350,220 @@ fun DrawScope.drawPaperPlane(
     pitchDeg: Float,
     skin: PlaneSkin,
     scale: Float = 1f,
+    time: Float = 0f,
 ) {
     withTransform({
         translate(center.x, center.y)
         rotate(pitchDeg, pivot = Offset.Zero)
         scale(scale, scale, pivot = Offset.Zero)
     }) {
-        val body = Path().apply {
-            moveTo(halfW, 0f)
-            lineTo(-halfW, -halfH)
-            lineTo(-halfW * 0.4f, 0f)
-            lineTo(-halfW, halfH * 0.85f)
-            close()
+        when (skin.style) {
+            SkinStyle.CRANE -> drawCrane(halfW, halfH, skin)
+            SkinStyle.TWIN_JET -> drawTwinJet(halfW, halfH, skin, time)
+            else -> drawDartFamily(halfW, halfH, skin, time)
         }
-        val fold = Path().apply {
-            moveTo(halfW, 0f)
-            lineTo(-halfW * 0.4f, 0f)
-            lineTo(-halfW, halfH * 0.85f)
-            close()
-        }
-        // Tan lift shadow under the plane.
-        withTransform({ translate(halfH * 0.18f, halfH * 0.22f) }) {
-            drawPath(body, Tan.copy(alpha = 0.35f))
-        }
-        drawPath(body, Color(skin.bodyColor))
-        drawPath(fold, Color(skin.shadeColor))
-        drawPath(body, Color(skin.accentColor), style = Stroke(width = halfH * 0.14f))
-        drawLine(
-            Color(skin.accentColor).copy(alpha = 0.6f),
-            Offset(halfW, 0f),
-            Offset(-halfW * 0.4f, 0f),
-            strokeWidth = halfH * 0.10f,
-        )
     }
+}
+
+/** Dart silhouette shared by DART / STRIPES / WAVES / COMET, plus their decals. */
+private fun DrawScope.drawDartFamily(halfW: Float, halfH: Float, skin: PlaneSkin, time: Float) {
+    val body = Path().apply {
+        moveTo(halfW, 0f)
+        lineTo(-halfW, -halfH)
+        lineTo(-halfW * 0.4f, 0f)
+        lineTo(-halfW, halfH * 0.85f)
+        close()
+    }
+    val fold = Path().apply {
+        moveTo(halfW, 0f)
+        lineTo(-halfW * 0.4f, 0f)
+        lineTo(-halfW, halfH * 0.85f)
+        close()
+    }
+
+    // Warm comet glow trailing behind the night flyer (under everything).
+    if (skin.style == SkinStyle.COMET) {
+        val glow = Color(0xFFF2B24C)
+        val pulse = 1f + 0.08f * sin(time * 6f)
+        for (i in 0 until 3) {
+            drawCircle(
+                glow.copy(alpha = (0.28f - i * 0.09f)),
+                radius = halfH * (0.62f - i * 0.13f) * pulse,
+                center = Offset(-halfW * (1.05f + i * 0.34f), halfH * 0.05f * i),
+            )
+        }
+    }
+
+    // Tan lift shadow under the plane.
+    withTransform({ translate(halfH * 0.18f, halfH * 0.22f) }) {
+        drawPath(body, Tan.copy(alpha = 0.35f))
+    }
+    drawPath(body, Color(skin.bodyColor))
+    drawPath(fold, Color(skin.shadeColor))
+
+    // Style decals, clipped to the body so they follow the silhouette.
+    clipPath(body) {
+        when (skin.style) {
+            SkinStyle.STRIPES -> {
+                drawLine(
+                    Terracotta,
+                    Offset(-halfW, -halfH * 0.50f),
+                    Offset(halfW, halfH * 0.25f),
+                    strokeWidth = halfH * 0.30f,
+                )
+                drawLine(
+                    Teal,
+                    Offset(-halfW, -halfH * 0.10f),
+                    Offset(halfW, halfH * 0.55f),
+                    strokeWidth = halfH * 0.30f,
+                )
+            }
+            SkinStyle.WAVES -> {
+                for (k in 0 until 3) {
+                    val y = -halfH * 0.25f + k * halfH * 0.34f
+                    val wave = Path().apply {
+                        moveTo(-halfW * 0.95f, y)
+                        quadraticBezierTo(-halfW * 0.2f, y - halfH * 0.34f, halfW * 0.7f, y)
+                    }
+                    drawPath(
+                        wave,
+                        PaperWhite.copy(alpha = 0.85f),
+                        style = Stroke(width = halfH * 0.12f, cap = StrokeCap.Round),
+                    )
+                }
+            }
+            SkinStyle.COMET -> {
+                val star = PaperWhite.copy(alpha = 0.92f)
+                for ((sx, sy) in listOf(
+                    -0.55f to -0.45f, -0.15f to -0.20f, 0.25f to -0.10f,
+                    -0.62f to 0.32f, 0.02f to 0.26f,
+                )) {
+                    drawCircle(star, radius = halfH * 0.085f, center = Offset(halfW * sx, halfH * sy))
+                }
+                // One 4-point sparkle.
+                val cx = -halfW * 0.32f
+                val cy = -halfH * 0.52f
+                val r = halfH * 0.26f
+                drawLine(star, Offset(cx - r, cy), Offset(cx + r, cy), strokeWidth = halfH * 0.07f, cap = StrokeCap.Round)
+                drawLine(star, Offset(cx, cy - r), Offset(cx, cy + r), strokeWidth = halfH * 0.07f, cap = StrokeCap.Round)
+            }
+            else -> Unit
+        }
+    }
+
+    drawPath(body, Color(skin.accentColor), style = Stroke(width = halfH * 0.14f))
+    drawLine(
+        Color(skin.accentColor).copy(alpha = 0.6f),
+        Offset(halfW, 0f),
+        Offset(-halfW * 0.4f, 0f),
+        strokeWidth = halfH * 0.10f,
+    )
+}
+
+/** Origami crane: raised wing, folded neck and head, pointed tail. */
+private fun DrawScope.drawCrane(halfW: Float, halfH: Float, skin: PlaneSkin) {
+    fun poly(vararg pts: Pair<Float, Float>): Path = Path().apply {
+        pts.forEachIndexed { i, (x, y) ->
+            if (i == 0) moveTo(x * halfW, y * halfH) else lineTo(x * halfW, y * halfH)
+        }
+        close()
+    }
+
+    val bodyP = poly(-1.0f to -0.05f, -0.25f to -0.25f, 0.5f to -0.05f, 0.15f to 0.55f, -0.6f to 0.3f)
+    val wingP = poly(-0.3f to -0.15f, 0.02f to -1.0f, 0.42f to -0.12f)
+    val neckP = poly(0.45f to -0.05f, 0.78f to -0.72f, 0.6f to 0.0f)
+    val headP = poly(0.78f to -0.72f, 1.0f to -0.6f, 0.76f to -0.5f)
+
+    // Lift shadow from the whole bird.
+    withTransform({ translate(halfH * 0.18f, halfH * 0.22f) }) {
+        drawPath(bodyP, Tan.copy(alpha = 0.35f))
+        drawPath(wingP, Tan.copy(alpha = 0.35f))
+    }
+
+    val ink = Color(skin.accentColor)
+    val outline = Stroke(width = halfH * 0.10f)
+    drawPath(wingP, Color(skin.shadeColor)); drawPath(wingP, ink, style = outline)
+    drawPath(bodyP, Color(skin.bodyColor)); drawPath(bodyP, ink, style = outline)
+    drawPath(neckP, Color(skin.bodyColor)); drawPath(neckP, ink, style = outline)
+    drawPath(headP, Color(skin.shadeColor)); drawPath(headP, ink, style = outline)
+}
+
+/** Sleek paper jet with two engine pods and flickering exhaust flames. */
+private fun DrawScope.drawTwinJet(halfW: Float, halfH: Float, skin: PlaneSkin, time: Float) {
+    val body = Path().apply {
+        moveTo(halfW, 0f)
+        lineTo(-halfW, -halfH)
+        lineTo(-halfW * 0.4f, 0f)
+        lineTo(-halfW, halfH * 0.85f)
+        close()
+    }
+    val fold = Path().apply {
+        moveTo(halfW, 0f)
+        lineTo(-halfW * 0.4f, 0f)
+        lineTo(-halfW, halfH * 0.85f)
+        close()
+    }
+    val ink = Color(skin.accentColor)
+
+    fun engine(cx: Float, cy: Float, w: Float, h: Float, podColor: Color, flameScale: Float, phase: Float) {
+        // Flickering exhaust out the back of the pod.
+        val flick = 0.55f + 0.22f * sin(time * 24f + phase) + 0.12f * sin(time * 61f + phase * 2f)
+        val flameLen = halfW * 0.55f * flick * flameScale
+        val rear = cx - w / 2f
+        val outer = Path().apply {
+            moveTo(rear, cy - h * 0.32f)
+            lineTo(rear - flameLen, cy)
+            lineTo(rear, cy + h * 0.32f)
+            close()
+        }
+        val innerLen = flameLen * 0.55f
+        val innerP = Path().apply {
+            moveTo(rear, cy - h * 0.18f)
+            lineTo(rear - innerLen, cy)
+            lineTo(rear, cy + h * 0.18f)
+            close()
+        }
+        drawPath(outer, Terracotta.copy(alpha = 0.85f))
+        drawPath(innerP, Color(0xFFF2C14E))
+        // Pod with ink outline and a bright intake ring at the front.
+        val corner = androidx.compose.ui.geometry.CornerRadius(h / 2f, h / 2f)
+        drawRoundRect(podColor, topLeft = Offset(cx - w / 2f, cy - h / 2f), size = Size(w, h), cornerRadius = corner)
+        drawRoundRect(ink, topLeft = Offset(cx - w / 2f, cy - h / 2f), size = Size(w, h), cornerRadius = corner, style = Stroke(width = halfH * 0.09f))
+        drawCircle(PaperWhite, radius = h * 0.22f, center = Offset(cx + w * 0.32f, cy))
+    }
+
+    // Far engine (on the other wing) sits behind the body, slightly smaller.
+    engine(
+        cx = -halfW * 0.30f, cy = -halfH * 0.62f,
+        w = halfW * 0.52f, h = halfH * 0.32f,
+        podColor = Color(0xFF3D6F75), flameScale = 0.8f, phase = 1.7f,
+    )
+
+    // Lift shadow + body.
+    withTransform({ translate(halfH * 0.18f, halfH * 0.22f) }) {
+        drawPath(body, Tan.copy(alpha = 0.35f))
+    }
+    drawPath(body, Color(skin.bodyColor))
+    drawPath(fold, Color(skin.shadeColor))
+    clipPath(body) {
+        // Terracotta nose cone and a teal canopy.
+        drawRect(Terracotta, topLeft = Offset(halfW * 0.55f, -halfH), size = Size(halfW * 0.45f, halfH * 2f))
+        drawCircle(Teal, radius = halfH * 0.20f, center = Offset(halfW * 0.28f, -halfH * 0.16f))
+    }
+    drawPath(body, ink, style = Stroke(width = halfH * 0.14f))
+    drawLine(
+        ink.copy(alpha = 0.6f),
+        Offset(halfW, 0f),
+        Offset(-halfW * 0.4f, 0f),
+        strokeWidth = halfH * 0.10f,
+    )
+
+    // Near engine hangs under the near wing, in front of the body.
+    engine(
+        cx = -halfW * 0.22f, cy = halfH * 0.48f,
+        w = halfW * 0.62f, h = halfH * 0.40f,
+        podColor = Teal, flameScale = 1f, phase = 0f,
+    )
 }
 
 private fun DrawScope.drawPlaneOrCrumple(state: GameUiState, skin: PlaneSkin, unit: Float) {
@@ -425,7 +609,7 @@ private fun DrawScope.drawPlaneOrCrumple(state: GameUiState, skin: PlaneSkin, un
                 if (state.phase == GamePhase.RUNNING) {
                     drawMotionTrail(px, py, halfW, halfH, pitch, state.plane.vy, unit)
                 }
-                drawPaperPlane(Offset(px, py), halfW, halfH, pitch, skin)
+                drawPaperPlane(Offset(px, py), halfW, halfH, pitch, skin, time = state.elapsed)
             }
         }
     }
