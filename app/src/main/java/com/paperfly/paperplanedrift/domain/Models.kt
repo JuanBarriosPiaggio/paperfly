@@ -3,7 +3,7 @@ package com.paperfly.paperplanedrift.domain
 import kotlin.math.abs
 import kotlin.math.sin
 
-enum class GamePhase { READY, RUNNING, CRASHING, GAME_OVER }
+enum class GamePhase { READY, COUNTDOWN, RUNNING, CRASHING, GAME_OVER }
 
 enum class ObstacleType { TORN_PAPER, SCISSORS, STAPLER, WINDOW, FAN }
 

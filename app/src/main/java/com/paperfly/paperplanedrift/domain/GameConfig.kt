@@ -49,4 +49,6 @@ object GameConfig {
     // --- Crash / revive ---
     const val CRASH_ANIM_SECONDS = 0.55f
     const val REVIVE_INVULNERABLE_SECONDS = 1.6f
+    /** Countdown shown after an ad revive so the player is ready before physics resumes. */
+    const val REVIVE_COUNTDOWN_SECONDS = 3f
 }

@@ -75,7 +75,22 @@ Create these in-app products in Play Console (all one-time, non-consumable):
 Entitlements are granted in `AppContainer` (see `PaperPlaneApp.kt`). The app must be signed
 and uploaded to a Play track for billing to work end-to-end.
 
-### 3. Tuning the difficulty curve
+### 3. Play Games Services (leaderboards & achievements)
+
+The app submits scores to two leaderboards and unlocks nine achievements via
+Play Games Services v2. Until configured, every call fails soft (the game plays fine).
+
+1. In Play Console: **Grow > Play Games Services > Setup and management > Configuration**,
+   create a game project and link this app.
+2. Create two leaderboards ("High Score", "Daily Challenge") and the achievements
+   (first flight, score 100/250/500/1000, clean streak 3/5, daily challenge, early crumple).
+3. Replace the placeholder IDs in `games/PlayGamesManager.kt` (`Ids` object) and put the
+   numeric Games project ID in `res/values/strings.xml` (`game_services_project_id`).
+
+PGS leaderboards automatically track daily / weekly / all-time windows — no reset
+logic needed in the app. Scores are submitted in `GameViewModel.reportToPlayGames()`.
+
+### 4. Tuning the difficulty curve
 
 Everything lives in `domain/GameConfig.kt`:
 
@@ -86,7 +101,7 @@ Everything lives in `domain/GameConfig.kt`:
 - `DIFFICULTY_FULL_DISTANCE` — how fast the whole curve ramps (bigger = gentler)
 - `CLEAN_GLIDE_TOLERANCE`, `CLEAN_GLIDE_BONUS` — bonus scoring
 
-### 4. Adding a new plane skin
+### 5. Adding a new plane skin
 
 Append one entry to `SkinRepository.skins` in `data/SkinRepository.kt`:
 

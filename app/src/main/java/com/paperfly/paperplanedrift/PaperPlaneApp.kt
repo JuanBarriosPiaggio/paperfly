@@ -9,6 +9,7 @@ import com.paperfly.paperplanedrift.billing.BillingManager
 import com.paperfly.paperplanedrift.data.ProgressRepository
 import com.paperfly.paperplanedrift.data.SkinRepository
 import com.paperfly.paperplanedrift.data.UnlockMethod
+import com.paperfly.paperplanedrift.games.PlayGamesManager
 import com.paperfly.paperplanedrift.util.HapticsManager
 import com.paperfly.paperplanedrift.util.SoundManager
 import kotlinx.coroutines.CoroutineScope
@@ -38,6 +39,8 @@ class AppContainer(context: Context) {
     // Swap for MockAdManager() to test gameplay in an emulator with no AdMob at all.
     val adManager: AdManager = AdMobAdManager()
     val interstitialPolicy = InterstitialPolicy()
+
+    val playGamesManager = PlayGamesManager(context)
 
     val billingManager = BillingManager(context) { productId ->
         scope.launch {

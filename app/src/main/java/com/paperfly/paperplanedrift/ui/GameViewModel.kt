@@ -7,6 +7,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.paperfly.paperplanedrift.data.ProgressRepository
 import com.paperfly.paperplanedrift.domain.CollisionDetector
+import com.paperfly.paperplanedrift.games.PlayGamesManager
 import com.paperfly.paperplanedrift.domain.GameConfig
 import com.paperfly.paperplanedrift.domain.GamePhase
 import com.paperfly.paperplanedrift.domain.Obstacle
@@ -46,6 +47,8 @@ data class GameUiState(
     val invulnerableFor: Float = 0f,
     val crashTimer: Float = 0f,
     val dailyMode: Boolean = false,
+    /** Seconds left in the post-revive countdown (COUNTDOWN phase). */
+    val countdown: Float = 0f,
 ) {
     val planeWorldX: Float get() = distance + worldWidth * GameConfig.PLANE_X_FRACTION
 }
@@ -54,6 +57,7 @@ class GameViewModel(
     private val progressRepository: ProgressRepository,
     private val soundManager: SoundManager,
     private val hapticsManager: HapticsManager,
+    private val playGamesManager: PlayGamesManager? = null,
 ) : ViewModel() {
 
     var uiState by mutableStateOf(GameUiState())
@@ -71,6 +75,9 @@ class GameViewModel(
     // Tracks whether each animated obstacle (scissors/stapler) is currently
     // "closed", so we can fire a snip/snap sound exactly on the closing edge.
     private val obstacleClosedState = HashMap<Int, Boolean>()
+
+    /** Elapsed value at launch, to measure real run duration for achievements. */
+    private var runStartElapsed = 0f
 
     init {
         viewModelScope.launch {
@@ -107,9 +114,12 @@ class GameViewModel(
             GamePhase.READY -> if (down) {
                 soundManager.playSwoosh()
                 soundManager.startLoops()
+                runStartElapsed = s.elapsed
                 uiState = s.copy(phase = GamePhase.RUNNING, holding = true)
             }
             GamePhase.RUNNING -> uiState = s.copy(holding = down)
+            // Let the player pre-hold during the countdown so flight resumes seamlessly.
+            GamePhase.COUNTDOWN -> uiState = s.copy(holding = down)
             else -> uiState = s.copy(holding = false)
         }
     }
@@ -122,9 +132,11 @@ class GameViewModel(
         // Clear anything dangerous around and just ahead of the plane.
         val safeObstacles = s.obstacles.filter { it.worldX < planeX - 20f || it.worldX > planeX + 90f }
         soundManager.playSwoosh()
-        soundManager.startLoops()
+        // Give the player a 3-second countdown to get re-oriented after the ad
+        // before gravity kicks back in.
         uiState = s.copy(
-            phase = GamePhase.RUNNING,
+            phase = GamePhase.COUNTDOWN,
+            countdown = GameConfig.REVIVE_COUNTDOWN_SECONDS,
             plane = PlaneState(y = GameConfig.WORLD_HEIGHT / 2f, vy = 0f),
             holding = false,
             obstacles = safeObstacles,
@@ -146,9 +158,32 @@ class GameViewModel(
 
         when (uiState.phase) {
             GamePhase.READY -> tickReady(dt)
+            GamePhase.COUNTDOWN -> tickCountdown(dt)
             GamePhase.RUNNING -> tickRunning(dt)
             GamePhase.CRASHING -> tickCrashing(dt)
             GamePhase.GAME_OVER -> uiState = uiState.copy(particles = stepParticles(uiState.particles, dt))
+        }
+    }
+
+    /** Post-revive countdown: world frozen, plane hovers, big 3-2-1 in the HUD. */
+    private fun tickCountdown(dt: Float) {
+        val s = uiState
+        val remaining = s.countdown - dt
+        // Tick once each time a whole second boundary is crossed.
+        if (remaining > 0f && remaining.toInt() != s.countdown.toInt()) soundManager.playTick()
+        if (remaining <= 0f) {
+            soundManager.playSwoosh()
+            soundManager.startLoops()
+            runStartElapsed = s.elapsed
+            uiState = s.copy(phase = GamePhase.RUNNING, countdown = 0f)
+        } else {
+            // Gentle hover bob so the plane feels alive while frozen.
+            val y = GameConfig.WORLD_HEIGHT / 2f + sin(s.elapsed * 2.2f) * 1.2f
+            uiState = s.copy(
+                countdown = remaining,
+                elapsed = s.elapsed + dt,
+                plane = PlaneState(y = y, vy = 0f),
+            )
         }
     }
 
@@ -300,6 +335,31 @@ class GameViewModel(
                 uiState = uiState.copy(bestScore = s.score)
             }
         }
+        reportToPlayGames(s)
+    }
+
+    /** Leaderboard scores + achievement unlocks. All calls fail soft offline. */
+    private fun reportToPlayGames(s: GameUiState) {
+        val games = playGamesManager ?: return
+        games.submitScore(PlayGamesManager.Ids.LEADERBOARD_HIGH_SCORE, s.score.toLong())
+        if (s.dailyMode) {
+            games.submitScore(PlayGamesManager.Ids.LEADERBOARD_DAILY, s.score.toLong())
+            games.unlockAchievement(PlayGamesManager.Ids.ACH_DAILY_CHALLENGE)
+        }
+
+        games.unlockAchievement(PlayGamesManager.Ids.ACH_FIRST_FLIGHT)
+        for ((threshold, id) in listOf(
+            100 to PlayGamesManager.Ids.ACH_SCORE_100,
+            250 to PlayGamesManager.Ids.ACH_SCORE_250,
+            500 to PlayGamesManager.Ids.ACH_SCORE_500,
+            1000 to PlayGamesManager.Ids.ACH_SCORE_1000,
+        )) {
+            if (s.score >= threshold) games.unlockAchievement(id)
+        }
+        if (s.bestCleanGlideStreak >= 3) games.unlockAchievement(PlayGamesManager.Ids.ACH_CLEAN_STREAK_3)
+        if (s.bestCleanGlideStreak >= 5) games.unlockAchievement(PlayGamesManager.Ids.ACH_CLEAN_STREAK_5)
+        // The fun one: crumpled within 3 seconds of launch.
+        if (s.elapsed - runStartElapsed < 3f) games.unlockAchievement(PlayGamesManager.Ids.ACH_EARLY_CRUMPLE)
     }
 
     private fun crashBurst(x: Float, y: Float): List<Particle> {

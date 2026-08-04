@@ -29,6 +29,7 @@ class MainActivity : ComponentActivity() {
         val container = (application as PaperPlaneApp).container
         container.adManager.preload(this)
         container.billingManager.connect()
+        container.playGamesManager.attach(this)
 
         setContent {
             PaperTheme {
@@ -65,6 +66,8 @@ fun AppRoot(container: AppContainer, activity: MainActivity) {
                     container.progressRepository.setSoundEnabled(!progress.soundEnabled)
                 }
             },
+            onLeaderboard = { container.playGamesManager.showLeaderboards(activity) },
+            onAchievements = { container.playGamesManager.showAchievements(activity) },
         )
 
         Screen.GAME -> GameplayScreen(

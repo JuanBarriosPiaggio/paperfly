@@ -53,6 +53,8 @@ dependencies {
     implementation("androidx.datastore:datastore-preferences:1.1.1")
     // AdMob (test ad unit IDs are used in code; swap for real IDs before release)
     implementation("com.google.android.gms:play-services-ads:23.2.0")
+    // Play Games Services v2: achievements + leaderboards
+    implementation("com.google.android.gms:play-services-games-v2:22.0.0")
     // Google Play Billing v8 (required for Play updates after Aug 31, 2026)
     implementation("com.android.billingclient:billing-ktx:8.0.0")
 

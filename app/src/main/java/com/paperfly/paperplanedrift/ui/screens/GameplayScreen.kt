@@ -62,6 +62,7 @@ fun GameplayScreen(
                 progressRepository = container.progressRepository,
                 soundManager = container.soundManager,
                 hapticsManager = container.hapticsManager,
+                playGamesManager = container.playGamesManager,
             )
         }
     })
@@ -119,7 +120,9 @@ fun GameplayScreen(
         )
 
         // HUD: ink numerals on a translucent cream pill; milestone crossings flash sage.
-        if (state.phase == GamePhase.RUNNING || state.phase == GamePhase.CRASHING) {
+        if (state.phase == GamePhase.RUNNING || state.phase == GamePhase.CRASHING ||
+            state.phase == GamePhase.COUNTDOWN
+        ) {
             var flashUntil by remember { mutableFloatStateOf(-1f) }
             val milestone = state.meters / 100
             LaunchedEffect(milestone) {
@@ -154,6 +157,26 @@ fun GameplayScreen(
                         color = PaperColors.Sage,
                     )
                 }
+            }
+        }
+
+        // Post-revive countdown: big 3-2-1 so the player is ready before gravity resumes.
+        if (state.phase == GamePhase.COUNTDOWN) {
+            Column(
+                modifier = Modifier.align(Alignment.Center),
+                horizontalAlignment = Alignment.CenterHorizontally,
+            ) {
+                Text(
+                    text = "${kotlin.math.ceil(state.countdown).toInt()}",
+                    style = MaterialTheme.typography.displayLarge,
+                    fontSize = 96.sp,
+                    color = PaperColors.Terracotta,
+                )
+                Text(
+                    text = "Get ready…",
+                    style = MaterialTheme.typography.titleLarge,
+                    color = PaperColors.Ink,
+                )
             }
         }
 

@@ -34,6 +34,8 @@ fun MainMenuScreen(
     onShop: () -> Unit,
     onSettings: () -> Unit,
     onToggleSound: () -> Unit,
+    onLeaderboard: () -> Unit,
+    onAchievements: () -> Unit,
 ) {
     Column(
         modifier = Modifier
@@ -100,6 +102,10 @@ fun MainMenuScreen(
             TextButton(onClick = onToggleSound) {
                 Text(if (progress.soundEnabled) "Sound: On" else "Sound: Off", color = PaperColors.Teal)
             }
+        }
+        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            TextButton(onClick = onLeaderboard) { Text("Leaderboard", color = PaperColors.Teal) }
+            TextButton(onClick = onAchievements) { Text("Achievements", color = PaperColors.Teal) }
         }
     }
 }
