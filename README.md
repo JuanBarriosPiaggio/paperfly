@@ -55,7 +55,7 @@ Once GitHub Pages is enabled for this repo (Settings → Pages → Deploy from b
 
 Paste that URL into Play Console → App content → Privacy policy.
 
-Contact email in the policy: `info@vexlo.xo.uk`.
+Contact email in the policy: `info@vexlo.co.uk`.
 
 ## Setup for release
 
