@@ -10,3 +10,8 @@
 local.properties
 app/build
 paperfly_screenshot.png
+
+# Release signing secrets — never commit these
+keystore.properties
+*.jks
+*.keystore
