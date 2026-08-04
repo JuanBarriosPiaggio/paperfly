@@ -14,10 +14,10 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.PaperPlaneDrift">
 
-        <!-- AdMob TEST app ID. Swap with your real AdMob app ID before release. -->
+        <!-- AdMob app ID (production). -->
         <meta-data
             android:name="com.google.android.gms.ads.APPLICATION_ID"
-            android:value="ca-app-pub-3940256099942544~3347511713" />
+            android:value="ca-app-pub-5881206053165150~3269803349" />
 
         <!-- Play Games Services project ID (placeholder until Play Console setup). -->
         <meta-data

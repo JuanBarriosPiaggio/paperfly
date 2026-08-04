@@ -14,17 +14,17 @@ val keystoreProps = Properties().apply {
 }
 
 android {
-    namespace = "com.paperfly.paperplanedrift"
+    namespace = "com.vexlo.paperflydrift"
     // Play requires app updates to target an API level within one year of the
     // latest Android release (API 36 required from Aug 31, 2026).
     compileSdk = 36
 
     defaultConfig {
-        applicationId = "com.paperfly.paperplanedrift"
+        applicationId = "com.vexlo.paperflydrift"
         minSdk = 26
         targetSdk = 36
-        versionCode = 1
-        versionName = "1.0"
+        versionCode = 2
+        versionName = "1.0.1"
     }
 
     signingConfigs {

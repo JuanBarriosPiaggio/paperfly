@@ -15,18 +15,14 @@ import java.util.concurrent.Executors
 import java.util.concurrent.atomic.AtomicBoolean
 
 /**
- * Real AdMob implementation.
- *
- * NOTE: these are Google's public TEST ad unit IDs.
- * Swap them (and the APPLICATION_ID in AndroidManifest.xml) with your real
- * AdMob IDs before releasing.
+ * Real AdMob implementation using production ad unit IDs.
  */
 class AdMobAdManager : AdManager {
 
     companion object {
-        private const val REWARDED_ID = "ca-app-pub-3940256099942544/5224354917"
-        private const val INTERSTITIAL_ID = "ca-app-pub-3940256099942544/1033173712"
-        private const val BANNER_ID = "ca-app-pub-3940256099942544/6300978111"
+        private const val REWARDED_ID = "ca-app-pub-5881206053165150/9176736149"
+        private const val INTERSTITIAL_ID = "ca-app-pub-5881206053165150/7863654475"
+        private const val BANNER_ID = "ca-app-pub-5881206053165150/8609759936"
     }
 
     private val initialized = AtomicBoolean(false)
