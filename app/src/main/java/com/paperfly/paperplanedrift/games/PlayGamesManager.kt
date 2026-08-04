@@ -26,16 +26,16 @@ class PlayGamesManager(context: Context) {
         const val LEADERBOARD_HIGH_SCORE = "CgkIprWp8_ALEAIQAQ"
         const val LEADERBOARD_DAILY = "CgkIprWp8_ALEAIQAg"
 
-        // Achievements — paste IDs from Play Console after importing achievements
-        const val ACH_FIRST_FLIGHT = "REPLACE_ach_first_flight"
-        const val ACH_SCORE_100 = "REPLACE_ach_score_100"
-        const val ACH_SCORE_250 = "REPLACE_ach_score_250"
-        const val ACH_SCORE_500 = "REPLACE_ach_score_500"
-        const val ACH_SCORE_1000 = "REPLACE_ach_score_1000"
-        const val ACH_CLEAN_STREAK_3 = "REPLACE_ach_clean_streak_3"
-        const val ACH_CLEAN_STREAK_5 = "REPLACE_ach_clean_streak_5"
-        const val ACH_DAILY_CHALLENGE = "REPLACE_ach_daily_challenge"
-        const val ACH_EARLY_CRUMPLE = "REPLACE_ach_early_crumple"
+        // Achievements
+        const val ACH_FIRST_FLIGHT = "CgkIprWp8_ALEAIQBw"
+        const val ACH_SCORE_100 = "CgkIprWp8_ALEAIQCA"
+        const val ACH_SCORE_250 = "CgkIprWp8_ALEAIQCQ"
+        const val ACH_SCORE_500 = "CgkIprWp8_ALEAIQCg"
+        const val ACH_SCORE_1000 = "CgkIprWp8_ALEAIQCw"
+        const val ACH_CLEAN_STREAK_3 = "CgkIprWp8_ALEAIQDA"
+        const val ACH_CLEAN_STREAK_5 = "CgkIprWp8_ALEAIQDQ"
+        const val ACH_DAILY_CHALLENGE = "CgkIprWp8_ALEAIQDg"
+        const val ACH_EARLY_CRUMPLE = "CgkIprWp8_ALEAIQDw"
     }
 
     private var activityRef = WeakReference<Activity>(null)
