@@ -45,6 +45,18 @@ Requirements: JDK 17, Android SDK (compile SDK 34), min SDK 26.
 ./gradlew :app:installDebug      # install on a connected device
 ```
 
+## Privacy Policy
+
+The Play Store privacy policy lives at [`docs/privacy-policy.html`](docs/privacy-policy.html).
+
+Once GitHub Pages is enabled for this repo (Settings → Pages → Deploy from branch `main` / folder `/docs`), the public URL is:
+
+**https://juanbarriospiaggio.github.io/paperfly/privacy-policy.html**
+
+Paste that URL into Play Console → App content → Privacy policy.
+
+Update the contact email in the HTML if `privacy@vexlo.com` is not your real address.
+
 ## Setup for release
 
 ### 1. Real AdMob IDs
