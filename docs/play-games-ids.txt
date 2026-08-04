@@ -1,0 +1,21 @@
+# Play Games Services IDs — Paper Plane Drift
+# Project: Fly Paper Drift / Paper Plane Drift
+# Package: com.vexlo.paperflydrift
+
+project_id=408263744166
+
+## Leaderboards
+high_score=CgkIprWp8_ALEAIQAQ
+daily_challenge=CgkIprWp8_ALEAIQAg
+
+## Achievements
+# Paste each achievement ID from Play Console after import/create:
+# first_flight=
+# score_100=
+# score_250=
+# score_500=
+# score_1000=
+# clean_streak_3=
+# clean_streak_5=
+# daily_challenge=
+# early_crumple=

@@ -23,10 +23,10 @@ class PlayGamesManager(context: Context) {
 
     object Ids {
         // Leaderboards
-        const val LEADERBOARD_HIGH_SCORE = "REPLACE_leaderboard_high_score"
-        const val LEADERBOARD_DAILY = "REPLACE_leaderboard_daily_challenge"
+        const val LEADERBOARD_HIGH_SCORE = "CgkIprWp8_ALEAIQAQ"
+        const val LEADERBOARD_DAILY = "CgkIprWp8_ALEAIQAg"
 
-        // Achievements
+        // Achievements — paste IDs from Play Console after importing achievements
         const val ACH_FIRST_FLIGHT = "REPLACE_ach_first_flight"
         const val ACH_SCORE_100 = "REPLACE_ach_score_100"
         const val ACH_SCORE_250 = "REPLACE_ach_score_250"

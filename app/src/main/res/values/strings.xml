@@ -3,5 +3,5 @@
     <string name="app_name">Paper Plane Drift</string>
     <!-- Play Games Services project ID. PLACEHOLDER: replace with the numeric
          project ID from Play Console > Grow > Play Games Services before release. -->
-    <string name="game_services_project_id" translatable="false">1234567890</string>
+    <string name="game_services_project_id" translatable="false">408263744166</string>
 </resources>
